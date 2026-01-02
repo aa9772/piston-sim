@@ -92,7 +92,7 @@ python main.py
 ### Coils (R/W) – Fault / Block
 | Piston ID | Coil Offset | Function       |
 |-----------|------------|----------------|
-| i         | 100 + i    | Fault / Block  |
+| i         | 40 + i    | Fault / Block  |
 
 ### Discrete Inputs (R/O) – Sensors
 | Piston ID | DI Offset  | Function           |
