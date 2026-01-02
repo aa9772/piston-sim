@@ -5,7 +5,7 @@ from matplotlib.animation import FuncAnimation
 from config import DT, SIM_TIME, DEFAULT_SPEED
 from piston import Piston
 from plc import SimplePLC
-from shared_vars import piston_commands, piston_sensors, piston_blocked
+from shared_vars import piston_commands, piston_sensors, piston_faults, update_commands_from_modbus, write_sensors_to_modbus, init_pistons, update_faults_from_modbus
 
 def main(file_path):
     # Read configuration from Excel
@@ -28,7 +28,7 @@ def main(file_path):
     for idx, piston in enumerate(pistons):
         # Initialize dictionaries for external communication
         piston_commands[idx] = {'extend': False, 'retract': False}
-        piston_blocked[idx] = False
+        piston_faults[idx] = False
         piston_sensors[idx] = {'extended': False, 'retracted': False}
 
 
@@ -87,7 +87,16 @@ def main(file_path):
             'label_text': label_text
         })
 
+    init_pistons(len(pistons))
+
     def update(frame):
+
+        # Read commands from Modbus
+        update_commands_from_modbus()
+
+        # Read faults from Modbus
+        update_faults_from_modbus()
+
         for i, (piston, plc, ax_patches) in enumerate(zip(pistons, plcs, patches_list)):
 
             # ======== READ EXTERNAL COMMANDS =========
@@ -96,7 +105,15 @@ def main(file_path):
             piston.u_retract = cmd.get('retract', False)
 
             # ======== APPLY BLOCK FAULT ============
-            piston.blocked = piston_blocked.get(i, False)
+            piston.blocked = piston_faults.get(i, False)
+            
+            # --- Single command logic ---
+            if piston.single_command:
+                piston.u_extend = piston_commands[i]['extend']
+                piston.u_retract = not piston.u_extend
+            else:
+                piston.u_extend = piston_commands[i]['extend']
+                piston.u_retract = piston_commands[i]['retract']
 
             # ======== STEP PLC AND PISTON ==========
             plc.step(piston.y_extended, piston.y_retracted)
@@ -121,6 +138,14 @@ def main(file_path):
                 ax_patches['sensor_extend'].set_color('grey')
             ax_patches['cmd_extend'].set_color('green' if piston.u_extend else 'red')
             ax_patches['cmd_retract'].set_color('green' if piston.u_retract else 'red')
+
+
+            # Update shared_vars sensors
+            piston_sensors[i]['extended'] = piston.y_extended if piston.has_extend_sensor else 0
+            piston_sensors[i]['retracted'] = piston.y_retracted if piston.has_retract_sensor else 0
+
+        # Write sensor states back to Modbus
+        write_sensors_to_modbus()
 
     # Create animation
     anim = FuncAnimation(fig, update, frames=int(SIM_TIME/DT), interval=DT*1000)
