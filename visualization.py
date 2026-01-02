@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import sys
 
 def draw_piston(ax, x: float, stroke: float, y_extended: bool, y_retracted: bool,
                 u_extend: bool, u_retract: bool):
@@ -8,6 +9,7 @@ def draw_piston(ax, x: float, stroke: float, y_extended: bool, y_retracted: bool
     ax.clear()
     rod_length = stroke
     # Adjust x-axis to fit rod + head
+    # Axis limits (fixed and consistent)
     ax.set_xlim(-0.2, stroke + rod_length + 0.1)
     ax.set_ylim(-0.3, 0.3)
     ax.axis("off")
@@ -38,5 +40,4 @@ def draw_piston(ax, x: float, stroke: float, y_extended: bool, y_retracted: bool
     # Exit if window closed
     if not plt.fignum_exists(ax.figure.number):
         plt.close('all')
-        import sys
         sys.exit()

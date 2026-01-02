@@ -11,9 +11,16 @@ class Piston:
         # For visualization
         self.u_extend = False
         self.u_retract = False
+        # Fault / mechanical block
+        self.blocked = False
 
     def step(self, u_extend: bool, u_retract: bool, dt: float):
         """Update piston position according to commands."""
+        
+        # Mechanical block: freeze motion
+        if self.blocked:
+            return
+
         if u_extend and not u_retract:
             self.x += self.speed * dt
         elif u_retract and not u_extend:
@@ -21,6 +28,7 @@ class Piston:
 
         # Physical end-stops
         self.x = max(0.0, min(self.x, self.stroke))
+
 
     @property
     def y_extended(self) -> bool:

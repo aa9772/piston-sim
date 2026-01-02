@@ -5,6 +5,7 @@ from matplotlib.animation import FuncAnimation
 from config import DT, SIM_TIME, DEFAULT_SPEED
 from piston import Piston
 from plc import SimplePLC
+from shared_vars import piston_commands, piston_sensors, piston_blocked
 
 def main(file_path):
     # Read configuration from Excel
@@ -23,6 +24,13 @@ def main(file_path):
         plc = SimplePLC()
         pistons.append(piston)
         plcs.append(plc)
+
+    for idx, piston in enumerate(pistons):
+        # Initialize dictionaries for external communication
+        piston_commands[idx] = {'extend': False, 'retract': False}
+        piston_blocked[idx] = False
+        piston_sensors[idx] = {'extended': False, 'retracted': False}
+
 
     n = len(pistons)
     fig, axes = plt.subplots(n, 1, figsize=(6, 2*n))
@@ -80,20 +88,29 @@ def main(file_path):
         })
 
     def update(frame):
-        for piston, plc, ax_patches in zip(pistons, plcs, patches_list):
-            # Step PLC logic
+        for i, (piston, plc, ax_patches) in enumerate(zip(pistons, plcs, patches_list)):
+
+            # ======== READ EXTERNAL COMMANDS =========
+            cmd = piston_commands.get(i, {})
+            piston.u_extend = cmd.get('extend', False)
+            piston.u_retract = cmd.get('retract', False)
+
+            # ======== APPLY BLOCK FAULT ============
+            piston.blocked = piston_blocked.get(i, False)
+
+            # ======== STEP PLC AND PISTON ==========
             plc.step(piston.y_extended, piston.y_retracted)
-            # Step piston movement
-            piston.step(plc.u_extend, plc.u_retract, DT)
-            piston.u_extend = plc.u_extend
-            piston.u_retract = plc.u_retract
+            piston.step(piston.u_extend, piston.u_retract, DT)
 
-            # Update rod and head positions (rod length fixed = piston stroke)
-            ax_patches['rod'].set_x(piston.x)              # move rod, fixed length
-            # ax_patches['rod'].set_width(ax_patches['rod_length'])  # length fixed, no update needed
+            # ======== UPDATE SENSOR STATES ==========
+            piston_sensors[i] = {
+                'extended': piston.y_extended,
+                'retracted': piston.y_retracted
+            }
+
+            # ======== UPDATE VISUALIZATION ==========
+            ax_patches['rod'].set_x(piston.x)
             ax_patches['head'].set_x(piston.x + ax_patches['rod_length'])
-
-            # Update sensors color based on piston position
             if piston.has_retract_sensor:
                 ax_patches['sensor_retract'].set_color('green' if piston.y_retracted else 'red')
             else:
@@ -102,12 +119,8 @@ def main(file_path):
                 ax_patches['sensor_extend'].set_color('green' if piston.y_extended else 'red')
             else:
                 ax_patches['sensor_extend'].set_color('grey')
-
-            # Update command indicators color
             ax_patches['cmd_extend'].set_color('green' if piston.u_extend else 'red')
             ax_patches['cmd_retract'].set_color('green' if piston.u_retract else 'red')
-
-        return []
 
     # Create animation
     anim = FuncAnimation(fig, update, frames=int(SIM_TIME/DT), interval=DT*1000)
