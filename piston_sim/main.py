@@ -1,4 +1,5 @@
 import sys
+import os
 import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
@@ -152,7 +153,6 @@ def main(file_path):
     plt.show()
 
 if __name__ == "__main__":
-    import os
     # Use default Excel file if no argument is provided
     if len(sys.argv) < 2:
         default_file = os.path.join(os.path.dirname(__file__), "pistons_config.xlsx")

@@ -1,5 +1,9 @@
 # piston-sim
 
+![License](https://img.shields.io/badge/license-MIT-green)
+![Python](https://img.shields.io/badge/python-3.8%2B-blue)
+![GitHub release](https://img.shields.io/github/v/release/aa9772/piston-sim)
+
 **piston-sim** is a Python project that simulates multiple pistons with endstop sensors, control commands, and fault handling. It uses **Matplotlib** for visualization, **Excel** for configuration, and **pyModbusTCP** for Modbus TCP communication. The simulation is modular and supports an arbitrary number of pistons, each with individual parameters.
 
 ---
