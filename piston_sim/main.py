@@ -3,10 +3,10 @@ import os
 import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
-from config import DT, SIM_TIME, DEFAULT_SPEED
-from piston import Piston
-from plc import SimplePLC
-from shared_vars import piston_commands, piston_sensors, piston_faults, update_commands_from_modbus, write_sensors_to_modbus, init_pistons, update_faults_from_modbus
+from .config import DT, SIM_TIME, DEFAULT_SPEED
+from .piston import Piston
+from .plc import SimplePLC
+from .shared_vars import piston_commands, piston_sensors, piston_faults, update_commands_from_modbus, write_sensors_to_modbus, init_pistons, update_faults_from_modbus
 
 def main(file_path):
     # Read configuration from Excel
