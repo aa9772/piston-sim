@@ -62,8 +62,7 @@ def update_faults_from_modbus():
     """
     for i in piston_faults:
         try:
-            val = server.data_bank.get_coils(40 + i, 1)  # starting offset 50 for fault coils
-            piston_faults[i] = bool(val[0])
+            val = server.data_bank.get_coils(len(piston_commands) * 2 + i, 1)  # starting offset from last command coils
         except Exception:
             piston_faults[i] = False
 
