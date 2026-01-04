@@ -70,14 +70,14 @@ Example:
 Run the main Python script with the Excel file path as argument:
 
 ```bash
-python main.py path_to_excel.xlsx
+python -m piston_sim.main path_to_your_excel.xlsx
 
 ```
 
 If no argument is provided, the script uses pistons_config.xlsx in the project folder by default:
 
 ```bash
-python main.py
+python -m piston_sim.main
 ```
 
 ---
