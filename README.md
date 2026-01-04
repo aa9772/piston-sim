@@ -96,7 +96,7 @@ python -m piston_sim.main
 ### Coils (R/W) – Fault / Block
 | Piston ID | Coil Offset | Function       |
 |-----------|------------|----------------|
-| i         | 40 + i    | Fault / Block  |
+| i         | N pistons + i    | Fault / Block  |
 
 ### Discrete Inputs (R/O) – Sensors
 | Piston ID | DI Offset  | Function           |
